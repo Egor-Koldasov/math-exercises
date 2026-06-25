@@ -1,4 +1,4 @@
-import { getRandomInt } from "./getRandomInt"
+import { getRandomInt } from "../util/getRandomInt"
 
 type FactorNumberQuestionOpts = {
   min?: number

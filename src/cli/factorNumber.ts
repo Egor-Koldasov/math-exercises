@@ -1,5 +1,5 @@
 import { createInterface } from "node:readline/promises"
-import { makeFactorNumberQuestion } from "../makeFactorNumberQuestion"
+import { makeFactorNumberQuestion } from "../questions/makeFactorNumberQuestion"
 
 const printInputError = () => {
   console.log("Invalid input")
