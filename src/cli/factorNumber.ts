@@ -52,6 +52,7 @@ export const factorNumber = async () => {
         }
         userInputNumbers.push(inputNumber)
       }
+      // TODO: try again
       if (!isParsingValid) {
         printInputError()
         continue
@@ -86,6 +87,7 @@ export const factorNumber = async () => {
           matchProducts(userInputNumbers, p),
         )
         printCorrect(!!factorFound)
+        // TODO: try again
         if (!!factorFound) {
           console.log(
             `But the biggest factor is ${biggestFactorProducts[0]!} * ${biggestFactorProducts[1]!}`,
