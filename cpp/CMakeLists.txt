@@ -7,15 +7,24 @@ add_executable(factor_number
   src/questions/makeFactorNumberQuestion.cpp
   src/util/getRandomInt.cpp
 )
+add_executable(find_closest_root
+  src/cli/findClosestRoot.cpp
+  src/util/getRandomInt.cpp
+)
 
 find_library(EDITLINE_LIBRARY
   NAMES edit
   REQUIRED
 )
 
-target_link_libraries(factor_number PRIVATE ${EDITLINE_LIBRARY})
+set(EXECUTABLES factor_number find_closest_root)
 
-target_compile_features(factor_number PRIVATE cxx_std_20)
-target_include_directories(factor_number PRIVATE src)
+foreach (executable IN LISTS EXECUTABLES)
+  target_link_libraries(${executable} PRIVATE ${EDITLINE_LIBRARY})
 
-install(TARGETS factor_number RUNTIME DESTINATION bin)
+  target_compile_features(${executable} PRIVATE cxx_std_20)
+  target_include_directories(${executable} PRIVATE src)
+
+  install(TARGETS ${executable} RUNTIME DESTINATION bin)
+endforeach()
+
