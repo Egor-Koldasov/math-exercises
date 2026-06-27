@@ -1,0 +1,6 @@
+{
+  "cmake.sourceDirectory": "${workspaceFolder}/cpp",
+  "cmake.buildDirectory": "${workspaceFolder}/cpp/build",
+  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+  "code-runner.runInTerminal": true
+}
