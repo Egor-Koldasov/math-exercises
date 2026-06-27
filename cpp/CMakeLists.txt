@@ -17,3 +17,5 @@ target_link_libraries(factor_number PRIVATE ${EDITLINE_LIBRARY})
 
 target_compile_features(factor_number PRIVATE cxx_std_20)
 target_include_directories(factor_number PRIVATE src)
+
+install(TARGETS factor_number RUNTIME DESTINATION bin)
