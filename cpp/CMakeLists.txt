@@ -11,13 +11,16 @@ add_executable(find_closest_root
   src/cli/findClosestRoot.cpp
   src/util/getRandomInt.cpp
 )
+add_executable(terminal_animation
+  src/cli/terminalAnimation.cpp
+)
 
 find_library(EDITLINE_LIBRARY
   NAMES edit
   REQUIRED
 )
 
-set(EXECUTABLES factor_number find_closest_root)
+set(EXECUTABLES factor_number find_closest_root terminal_animation)
 
 foreach (executable IN LISTS EXECUTABLES)
   target_link_libraries(${executable} PRIVATE ${EDITLINE_LIBRARY})

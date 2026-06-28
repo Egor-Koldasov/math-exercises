@@ -2,32 +2,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug test_main (CMake)",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}/cpp/build/test_main",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}/cpp",
-      "environment": [],
-      "externalConsole": false,
-      "MIMode": "lldb",
-      "preLaunchTask": "CMake: build test_main"
-    },
-    {
-      "name": "Debug factor_number (CMake)",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}/cpp/build/factor_number",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}/cpp",
-      "environment": [],
-      "externalConsole": false,
-      "MIMode": "lldb",
-      "preLaunchTask": "CMake: build"
-    },
-    {
       "type": "lldb",
       "request": "launch",
       "name": "Debug CMake target",
