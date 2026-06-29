@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <string>
 
@@ -19,6 +20,12 @@
 #define EC_RESET_BG_COLOR EC_ESC "[39m"
 
 constexpr std::string ecRgbI(int r, int g, int b) {
+  r = std::min(255, r);
+  r = std::max(0, r);
+  g = std::min(255, g);
+  g = std::max(0, g);
+  b = std::min(255, b);
+  b = std::max(0, b);
   return "\033[38;2;" + std::to_string(r) + ";" + std::to_string(g) + ";" +
          std::to_string(b) + "m";
 }
@@ -29,6 +36,12 @@ constexpr std::string ecRgbD(double r, double g, double b) {
 }
 
 constexpr std::string ecBgRgbI(int r, int g, int b) {
+  r = std::min(255, r);
+  r = std::max(0, r);
+  g = std::min(255, g);
+  g = std::max(0, g);
+  b = std::min(255, b);
+  b = std::max(0, b);
   return "\033[48;2;" + std::to_string(r) + ";" + std::to_string(g) + ";" +
          std::to_string(b) + "m";
 }
