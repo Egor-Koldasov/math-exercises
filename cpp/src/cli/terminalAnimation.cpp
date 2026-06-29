@@ -38,6 +38,19 @@ bool isInRange(double val, double target, double range) {
   return (val > target - range || val > target + range);
 }
 
+double fract(double x) { return x - std::floor(x); }
+
+double rand1(double x) { return fract(sin(x) * 1000000.); }
+
+double angleRand(double angleStep) {
+  return rand1((10000. + angleStep * 673.423));
+}
+
+double smoothstep(double edge0, double edge1, double x) {
+  double t = std::clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+  return t * t * (3.0 - 2.0 * t);
+}
+
 struct DrawState {
   double timeMs;
   IVec2 pixelSize;
@@ -59,9 +72,28 @@ std::string draw(IVec2 coord, IVec2 size, DrawState state) {
 
   double distance = uv.x * uv.x + uv.y * uv.y;
 
-  double glowMask = (1 - std::min(1., distance)) * sinAnimNorm;
+  double angle = atan2(uv.y, uv.x);
+  double angleNormalized = (angle + std::numbers::pi) / (2 * std::numbers::pi);
+  angleNormalized = std::min(angleNormalized, 0.99999);
+  angleNormalized = std::max(angleNormalized, 0.);
+  double angleCount = 10;
+  double angleStep = floor(angleNormalized * angleCount) + 1;
 
-  return ecRgbD(glowMask, glowMask, glowMask) + "•" + EC_RESET_TEXT_COLOR;
+  double angleRandSharpMask =
+      std::lerp(angleRand(angleStep / angleCount),
+                angleRand((fmod(angleStep, angleCount) + 1.) / angleCount),
+                smoothstep(0., 1., fract((angleNormalized * angleCount))));
+
+  double animatedAngleRandSharpMask =
+      -cos(2 * std::numbers::pi * (state.timeMs / 3000 + angleRandSharpMask)) *
+          0.5 +
+      0.5;
+
+  double glowMask = (1 - std::min(1., distance));
+
+  double outMask = std::max(0., glowMask - animatedAngleRandSharpMask * 0.4);
+
+  return ecRgbD(outMask, outMask, outMask) + "•" + EC_RESET_TEXT_COLOR;
 }
 
 struct TermSizeInfo {
