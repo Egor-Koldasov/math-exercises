@@ -185,8 +185,9 @@ UiBoxRender makeUiBox(const std::string &text) {
   return uiBox;
 }
 
+UiBoxRender ui = makeUiBox("Hello\nworld!!!");
+
 std::string draw(IVec2 pos, DrawCharState state) {
-  UiBoxRender ui = makeUiBox("Hello\nworld!!!");
   IVec2 uiSize = {static_cast<int>(ui.width),
                   static_cast<int>(ui.rows.size() / ui.width)};
   IVec2 uiPos;
