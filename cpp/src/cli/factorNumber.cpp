@@ -1,9 +1,12 @@
 #include "questions/makeFactorNumberQuestion.h"
 #include <algorithm>
+#include <getopt.h>
 #include <histedit.h>
 #include <iostream>
 #include <regex>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 struct PromptState {
   int factorsFilled;
@@ -84,7 +87,80 @@ bool matchProducts2(Products2 a, Products2 b) {
   return true;
 }
 
-int main() {
+namespace CliAppOpts {
+
+enum class GraphicsMode { FULL, TEXT };
+
+std::unordered_map<std::string, GraphicsMode> argvToGraphicsModeMap{
+    {"full", GraphicsMode::FULL}, {"text", GraphicsMode::TEXT}};
+struct CliAppOpts {
+  GraphicsMode graphicsMode;
+};
+static option optionConfList[] = {
+    option{"graphics-mode", required_argument, nullptr, 'g'},
+    option{nullptr, 0, nullptr, 0}};
+
+struct InitCliAppRes {
+  std::vector<std::string> errorMessages;
+  CliAppOpts opts;
+};
+
+InitCliAppRes initCliApp(int argc, char *argv[]) {
+  int opt;
+  InitCliAppRes res{};
+  while ((opt = getopt_long(argc, argv, "g:", optionConfList, nullptr)) != -1) {
+    switch (opt) {
+    case 'g': {
+      auto matchI = argvToGraphicsModeMap.find(optarg);
+      if (matchI == argvToGraphicsModeMap.end()) {
+        std::string validValues = "";
+        for (const auto &validValuePair : argvToGraphicsModeMap) {
+          if (validValues != "") {
+            validValues += ", ";
+          }
+          validValues += validValuePair.first;
+        }
+        res.errorMessages.emplace_back(
+            "Invalid value for the option graphics-mode. Valid values are: " +
+            validValues + ".");
+      } else {
+        res.opts.graphicsMode = matchI->second;
+      }
+      break;
+    }
+
+    case '?': {
+      res.errorMessages.emplace_back("Ivalid option name.");
+      break;
+    }
+    default: {
+      res.errorMessages.emplace_back("Unexpected arguments.");
+    }
+    }
+  }
+  return res;
+}
+} // namespace CliAppOpts
+
+std::string joinStringVector(const std::vector<std::string> &stringVector,
+                             const std::string &separator) {
+  std::string accumString = "";
+  for (int i = 0; i < stringVector.size(); i++) {
+    if (i > 0) {
+      accumString += separator;
+    }
+    accumString += stringVector.at(i);
+  }
+  return accumString;
+}
+
+int main(int argc, char *argv[]) {
+  auto cliAppOptsRes = CliAppOpts::initCliApp(argc, argv);
+  if (cliAppOptsRes.errorMessages.size() > 0) {
+    std::cerr << joinStringVector(cliAppOptsRes.errorMessages, "\n") << "\n";
+    return 1;
+  }
+
   auto elApp = el_init("FactorNumber", stdin, stdout, stderr);
 
   // Set the prompt
