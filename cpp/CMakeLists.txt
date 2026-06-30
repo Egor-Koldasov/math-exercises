@@ -12,6 +12,8 @@ add_executable(find_closest_root
   src/cli/findClosestRoot.cpp
   src/util/getRandomInt.cpp
   src/util/joinStringVector.cpp
+  src/util/draw.cpp
+  src/util/listenShutdownSignal.cpp
 )
 add_executable(terminal_animation
   src/cli/terminalAnimation.cpp

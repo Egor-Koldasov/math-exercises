@@ -33,7 +33,7 @@ double smoothstep(double edge0, double edge1, double x) {
   return t * t * (3.0 - 2.0 * t);
 }
 
-std::string draw(IVec2 coord, SystemState state) {
+std::string draw(IVec2 coord, DrawCharState state) {
   DVec2 uv{static_cast<double>(coord.x) / state.size.x,
            static_cast<double>(coord.y) / state.size.y};
   uv.x = uv.x * 2 - 1;

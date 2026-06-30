@@ -17,7 +17,7 @@
 #define EC_SHOW_CURSOR EC_ESC "[?25h"
 #define EC_HIDE_CURSOR EC_ESC "[?25l"
 #define EC_RESET_TEXT_COLOR EC_ESC "[39m"
-#define EC_RESET_BG_COLOR EC_ESC "[39m"
+#define EC_RESET_BG_COLOR EC_ESC "[49m"
 
 constexpr std::string ecRgbI(int r, int g, int b) {
   r = std::min(255, r);

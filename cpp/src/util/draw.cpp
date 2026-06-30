@@ -33,7 +33,7 @@ TermSizeInfo getTerminalSize() {
 
 void exitRenderer() { exitFullScreen(); }
 
-void initRenderer(Draw *drawChar) {
+void initRenderer(std::string (*drawChar)(IVec2 coord, DrawCharState state)) {
   using namespace std::chrono_literals;
   enterFullScreen();
   listenShutdownSignal();
@@ -62,9 +62,9 @@ void initRenderer(Draw *drawChar) {
       for (auto ix = 0; ix < termSizeInfo.charSize.x; ix++) {
         frameStr +=
             drawChar({.x = ix, .y = iy},
-                     SystemState{.size = nextTermSizeInfo.charSize,
-                                 .pixelSize = nextTermSizeInfo.pixelSize,
-                                 .timeMs = static_cast<double>(msPassed)});
+                     DrawCharState{.size = nextTermSizeInfo.charSize,
+                                   .pixelSize = nextTermSizeInfo.pixelSize,
+                                   .timeMs = static_cast<double>(msPassed)});
       }
       if (iy < termSizeInfo.charSize.y - 1) {
         frameStr += "\n";
@@ -73,7 +73,7 @@ void initRenderer(Draw *drawChar) {
 
     std::cout << EC_CURSOR_HOME << ecBgRgbI(0, 0, 0) << frameStr;
     std::cout.flush();
-    std::this_thread::sleep_for(16ms);
+    std::this_thread::sleep_for(8ms);
   }
   exitRenderer();
 }
