@@ -6,13 +6,17 @@ add_executable(factor_number
   src/cli/factorNumber.cpp
   src/questions/makeFactorNumberQuestion.cpp
   src/util/getRandomInt.cpp
+  src/util/joinStringVector.cpp
 )
 add_executable(find_closest_root
   src/cli/findClosestRoot.cpp
   src/util/getRandomInt.cpp
+  src/util/joinStringVector.cpp
 )
 add_executable(terminal_animation
   src/cli/terminalAnimation.cpp
+  src/util/draw.cpp
+  src/util/listenShutdownSignal.cpp
 )
 
 find_library(EDITLINE_LIBRARY

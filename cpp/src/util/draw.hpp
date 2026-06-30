@@ -10,5 +10,12 @@ struct DVec2 {
   double x;
   double y;
 };
+struct SystemState {
+  IVec2 size;
+  IVec2 pixelSize;
+  double timeMs;
+};
 
-typedef std::string Draw(IVec2 coord, IVec2 size);
+typedef std::string Draw(IVec2 coord, SystemState state);
+
+void initRenderer(Draw *drawChar);
