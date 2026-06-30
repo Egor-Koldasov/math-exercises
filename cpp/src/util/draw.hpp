@@ -2,6 +2,11 @@
 
 #include <string>
 
+namespace RawTerm {
+extern std::string inputBuffer;
+extern std::string submittedBuffer;
+} // namespace RawTerm
+
 struct IVec2 {
   int x;
   int y;
@@ -16,4 +21,5 @@ struct DrawCharState {
   double timeMs;
 };
 
-void initRenderer(std::string (*drawChar)(IVec2 coord, DrawCharState state));
+void initRenderer(std::string (*drawChar)(IVec2 coord, DrawCharState state),
+                  void (*afterFrame)() = nullptr);

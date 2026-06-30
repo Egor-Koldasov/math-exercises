@@ -4,6 +4,7 @@
 #include "util/termEscape.hpp"
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <getopt.h>
 #include <ios>
 #include <iostream>
@@ -82,9 +83,9 @@ std::string drawBackground(IVec2 pos, DrawCharState state) {
   double distSqr = uv.x * uv.x + uv.y * uv.y;
 
   double animNorm =
-      -sin(2 * std::numbers::pi * (state.timeMs / 3000)) * 0.5 + 0.5;
+      -sin(2 * std::numbers::pi * (state.timeMs / 12000)) * 0.5 + 0.5;
 
-  double mask = std::ranges::max(0., 1. - distSqr) * animNorm;
+  double mask = std::ranges::max(0., exp(-distSqr) * 0.3) * animNorm;
 
   return ecBgRgbD(mask, mask, mask) + " " + EC_RESET_BG_COLOR;
 }
@@ -104,6 +105,7 @@ UiBoxRender makeUiBox(const std::string &text) {
   std::vector<std::string> rows = {""};
   std::vector<std::string> renderString;
   size_t maxWidth = 0;
+  std::string color = ecBgRgbI(33, 33, 33);
 
   for (auto i = 0; i < text.size(); i++) {
     auto &charItem = text[i];
@@ -131,9 +133,10 @@ UiBoxRender makeUiBox(const std::string &text) {
   }
 
   for (auto gapI = 0; gapI < gap.y; gapI++) {
-    for (auto colI = 0; colI < maxWidth; colI++) {
+    for (auto colI = 0; colI < maxWidth + static_cast<size_t>(gap.x) * 2;
+         colI++) {
       if (colI == 0) {
-        renderString.emplace_back(ecBgRgbI(100, 100, 100) + " ");
+        renderString.emplace_back(color + " ");
       } else {
         renderString.emplace_back(" ");
       }
@@ -145,7 +148,7 @@ UiBoxRender makeUiBox(const std::string &text) {
 
     for (auto gapI = 0; gapI < gap.x; gapI++) {
       if (gapI == 0) {
-        renderString.emplace_back(ecBgRgbI(100, 100, 100) + " ");
+        renderString.emplace_back(color + " ");
       } else {
         renderString.emplace_back(" ");
       }
@@ -169,9 +172,10 @@ UiBoxRender makeUiBox(const std::string &text) {
   }
 
   for (auto gapI = 0; gapI < gap.y; gapI++) {
-    for (auto colI = 0; colI < maxWidth; colI++) {
+    for (auto colI = 0; colI < maxWidth + static_cast<size_t>(gap.x) * 2;
+         colI++) {
       if (colI == 0) {
-        renderString.emplace_back(ecBgRgbI(100, 100, 100) + " ");
+        renderString.emplace_back(color + " ");
       } else {
         renderString.emplace_back(" ");
       }
@@ -216,7 +220,7 @@ std::string draw(IVec2 pos, DrawCharState state) {
 void runTextMode() {
   while (true) {
     int randomNumber = getRandomInt({.min = 1, .max = 1000});
-    std::cout << "Find the closes roots for the number: " << randomNumber
+    std::cout << "Find the closest roots for the number: " << randomNumber
               << "\n";
     std::cin.ignore(max_stream_size, '\n');
     double root = std::sqrt(randomNumber);
@@ -229,7 +233,47 @@ void runTextMode() {
   }
 }
 
-void runGraphicsMode() { initRenderer(draw); }
+int lastRandomNumber = -1;
+int randomNumber = -1;
+std::string lastAnswer = "";
+
+void afterFrame() {
+  std::string uiText = "";
+  if (lastRandomNumber != -1) {
+    double root = std::sqrt(lastRandomNumber);
+    int intBefore = floor(root);
+    int intAfter = ceil(root);
+    double lastAnswerNumber = std::stod(lastAnswer);
+    bool isCorrect = abs(lastAnswerNumber - root) < 1;
+    uiText += "Last number: " + std::to_string(lastRandomNumber) + ". ";
+    uiText += "Your answer is ";
+    // uiText += (isCorrect ? (ecRgbI(70, 140, 70) + "correct.")
+    //                      : (ecRgbI(140, 70, 70) + "wrong!"));
+    uiText += (isCorrect ? "correct." : "wrong!");
+    // uiText += EC_RESET_TEXT_COLOR;
+    uiText += "\n";
+    uiText += "The root: " + std::to_string(intBefore) +
+              "^2=" + std::to_string(intBefore * intBefore) + " - " +
+              std::to_string(intAfter) +
+              "^2=" + std::to_string(intAfter * intAfter) + "   | " +
+              std::to_string(root) + "\n\n";
+  }
+
+  bool didAnswerChange = RawTerm::submittedBuffer != lastAnswer;
+
+  if (randomNumber == -1 || didAnswerChange) {
+    lastRandomNumber = randomNumber;
+    randomNumber = getRandomInt({1, 1000});
+    lastAnswer = RawTerm::submittedBuffer;
+  }
+
+  uiText +=
+      "Find the closest roots for the number: " + std::to_string(randomNumber);
+
+  ui = makeUiBox(uiText);
+}
+
+void runGraphicsMode() { initRenderer(draw, &afterFrame); }
 
 int main(int argc, char *argv[]) {
   auto cliAppOptsRes = CliAppOpts::initCliApp(argc, argv);

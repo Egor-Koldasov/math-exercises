@@ -10,6 +10,7 @@
 #define EC_GREEN_TEXT EC_ESC "[32m"
 #define EC_CURSOR_HOME EC_ESC "[H"
 #define EC_ERASE_SCREEN EC_ESC "[2J"
+#define EC_ERASE_LINE_END EC_ESC "[0K"
 #define EC_CURSOR_DOWN EC_ESC "[1B"
 #define EC_ENTER_ALT_SCREEN EC_ESC "[?1049h"
 #define EC_LEAVE_ALT_SCREEN EC_ESC "[?1049l"
@@ -18,6 +19,8 @@
 #define EC_HIDE_CURSOR EC_ESC "[?25l"
 #define EC_RESET_TEXT_COLOR EC_ESC "[39m"
 #define EC_RESET_BG_COLOR EC_ESC "[49m"
+#define EC_SAVE_CURSOR EC_ESC "[s"
+#define EC_RESTORE_CURSOR EC_ESC "[u"
 
 constexpr std::string ecRgbI(int r, int g, int b) {
   r = std::min(255, r);
@@ -49,4 +52,8 @@ constexpr std::string ecBgRgbD(double r, double g, double b) {
   return ecBgRgbI(static_cast<int>(round(r * 255)),
                   static_cast<int>(round(g * 255)),
                   static_cast<int>(round(b * 255)));
+}
+
+constexpr std::string ecCursor(int x, int y) {
+  return "\x1b[" + std::to_string(y) + ";" + std::to_string(x) + "H";
 }

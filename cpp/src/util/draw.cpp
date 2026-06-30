@@ -4,10 +4,45 @@
 #include <iostream>
 #include <sys/ioctl.h>
 #include <sys/ttycom.h>
+#include <termios.h>
 #include <thread>
 #include <unistd.h>
 
 #define DEFAULT_CHAR_RESERVE 4
+
+namespace RawTerm {
+termios oldTermios;
+
+void enableRawInput() {
+  tcgetattr(STDIN_FILENO, &oldTermios);
+
+  termios raw = oldTermios;
+  raw.c_lflag &= ~(ICANON | ECHO);
+  raw.c_cc[VMIN] = 0;
+  raw.c_cc[VTIME] = 0;
+
+  tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
+
+void disableRawInput() { tcsetattr(STDIN_FILENO, TCSAFLUSH, &oldTermios); }
+
+std::string inputBuffer;
+std::string submittedBuffer;
+char ch;
+void readInput() {
+  while (read(STDIN_FILENO, &ch, 1) == 1) {
+    if (ch == '\n' || ch == '\r') {
+      submittedBuffer = inputBuffer;
+      inputBuffer.clear();
+    } else if (ch == 127 || ch == '\b') {
+      if (!inputBuffer.empty())
+        inputBuffer.pop_back();
+    } else {
+      inputBuffer += ch;
+    }
+  }
+}
+} // namespace RawTerm
 
 void enterFullScreen() {
   std::cout << EC_ENTER_ALT_SCREEN << EC_HIDE_CURSOR << EC_ERASE_SCREEN
@@ -33,10 +68,12 @@ TermSizeInfo getTerminalSize() {
 
 void exitRenderer() { exitFullScreen(); }
 
-void initRenderer(std::string (*drawChar)(IVec2 coord, DrawCharState state)) {
+void initRenderer(std::string (*drawChar)(IVec2 coord, DrawCharState state),
+                  void (*afterFrame)()) {
   using namespace std::chrono_literals;
   enterFullScreen();
   listenShutdownSignal();
+  RawTerm::enableRawInput();
   TermSizeInfo termSizeInfo;
 
   auto startTime = std::chrono::steady_clock::now();
@@ -50,30 +87,40 @@ void initRenderer(std::string (*drawChar)(IVec2 coord, DrawCharState state)) {
     }
     termSizeInfo = nextTermSizeInfo;
 
+    IVec2 canvasSize = termSizeInfo.charSize;
+    canvasSize.y = canvasSize.y - 1;
+
     std::string frameStr;
-    frameStr.reserve((static_cast<unsigned long>(termSizeInfo.charSize.x) +
-                      DEFAULT_CHAR_RESERVE) *
-                     termSizeInfo.charSize.y);
+    frameStr.reserve(
+        (static_cast<unsigned long>(canvasSize.x) + DEFAULT_CHAR_RESERVE) *
+        canvasSize.y);
 
     auto timeNow = std::chrono::steady_clock::now();
     auto msPassed = (timeNow - startTime) / 1ms;
 
-    for (int iy = 0; iy < termSizeInfo.charSize.y; iy++) {
-      for (auto ix = 0; ix < termSizeInfo.charSize.x; ix++) {
+    for (int iy = 0; iy < canvasSize.y; iy++) {
+      for (auto ix = 0; ix < canvasSize.x; ix++) {
         frameStr +=
             drawChar({.x = ix, .y = iy},
-                     DrawCharState{.size = nextTermSizeInfo.charSize,
-                                   .pixelSize = nextTermSizeInfo.pixelSize,
+                     DrawCharState{.size = canvasSize,
+                                   .pixelSize = termSizeInfo.pixelSize,
                                    .timeMs = static_cast<double>(msPassed)});
       }
-      if (iy < termSizeInfo.charSize.y - 1) {
+      if (iy < canvasSize.y - 1) {
         frameStr += "\n";
       }
     }
 
-    std::cout << EC_CURSOR_HOME << ecBgRgbI(0, 0, 0) << frameStr;
+    std::cout << EC_CURSOR_HOME << ecBgRgbI(0, 0, 0) << frameStr << "\n";
     std::cout.flush();
-    std::this_thread::sleep_for(8ms);
+    RawTerm::readInput();
+    std::cout << RawTerm::inputBuffer << EC_ERASE_LINE_END;
+    std::cout.flush();
+    if (afterFrame != nullptr) {
+      afterFrame();
+    }
+    std::this_thread::sleep_for(16ms);
   }
+  RawTerm::disableRawInput();
   exitRenderer();
 }
